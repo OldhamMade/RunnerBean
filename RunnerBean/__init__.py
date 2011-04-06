@@ -9,6 +9,7 @@ from yaml import safe_load as decrypt
 
 class Runner(object):
     _server = None
+    _tubes = ['default']
     _debug = False
 
     def __init__(self, callable, host='0.0.0.0', port=11300, tubes=None, debug=False):
@@ -32,7 +33,7 @@ class Runner(object):
         elif isinstance(tubes, basestring):
             self._tubes = [str(tubes)]
 
-        else:
+        elif tubes is not None:
             raise Exception('"tubes" is not a valid type (iterable, string, unicode)')
 
         self._debug = debug
