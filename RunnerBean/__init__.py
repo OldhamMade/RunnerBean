@@ -26,6 +26,10 @@ class Runner(object):
 
 
     def __call__(self, timeout=None):
+        self.run(timeout=timeout)
+
+
+    def run(self, timeout=None):
         while 1:
             if self.debug:
                 print 'Reserving',
