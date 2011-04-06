@@ -25,7 +25,16 @@ class Runner(object):
 
         self._host = host
         self._port = port
-        self._tubes = tubes
+
+        if isinstance(tubes, (tuple, list, set)):
+            self._tubes = list(tubes)
+
+        elif isinstance(tubes, basestring):
+            self._tubes = [str(tubes)]
+
+        else:
+            raise Exception('"tubes" is not a valid type (iterable, string, unicode)')
+
         self._debug = debug
 
 
@@ -128,9 +137,10 @@ class Runner(object):
             self._server = beanstalkc.Connection(host=self._host,
                                                  port=self._port)
 
-            if self._tube:
-                self._server.watch(self._tube)
+            if self._tubes:
                 self._server.ignore('default')
+                for tube in self._tubes:
+                    self._server.watch(tube)
 
         return self._server
 
