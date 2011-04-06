@@ -56,10 +56,15 @@ class Runner(object):
             else:
                 job = self.server.reserve()
 
+            if not job:
+                if self._debug:
+                    print 'No job found; skipping'
+                continue
+
             if self._debug:
                 print 'Found job: %s' % job.id
 
-            if not job or not job.body:
+            if not job.body:
                 if self._debug:
                     print '  - burying job due to missing body'
                 job.bury()
