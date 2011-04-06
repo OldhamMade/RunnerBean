@@ -8,7 +8,8 @@ from yaml import safe_load as decrypt
 
 
 class Runner(object):
-    debug = False
+    _server = None
+    _debug = False
 
     def __init__(self, callable, host='0.0.0.0', port=11300, tubes=None, debug=False):
         if isinstance(callable, basestring):
@@ -25,7 +26,7 @@ class Runner(object):
         self._host = host
         self._port = port
         self._tubes = tubes
-        self.debug = debug
+        self._debug = debug
 
 
     def __call__(self, timeout=None):
@@ -34,7 +35,7 @@ class Runner(object):
 
     def run(self, timeout=None):
         while 1:
-            if self.debug:
+            if self._debug:
                 print 'Reserving',
                 if timeout:
                     print 'with timeout of %ds' % timeout,
@@ -45,11 +46,11 @@ class Runner(object):
             else:
                 job = self.server.reserve()
 
-            if self.debug:
+            if self._debug:
                 print 'Found job: %s' % job.id
 
             if not job or not job.body:
-                if self.debug:
+                if self._debug:
                     print '  - burying job due to missing body'
                 job.bury()
                 continue
@@ -57,13 +58,13 @@ class Runner(object):
             try:
                 data = decrypt(job.body)
             except:
-                if self.debug:
+                if self._debug:
                     print '  - burying job due to malformed body (not parsable by PyYAML)'
                 job.bury()
                 continue
 
             if not data or set(data.keys()) != self._expected_args:
-                if self.debug:
+                if self._debug:
                     print '  - burying job due to missing keys:',
                     print 'espected (%s),' % ', '.join(self._expected_args),
                     print 'found (%s),' % ', '.join(data.keys())
@@ -72,18 +73,18 @@ class Runner(object):
 
             try:
                 if self.callable(**data):
-                    if self.debug:
+                    if self._debug:
                         print '  - job executed successfully'
                     job.delete()
-                    if self.debug:
+                    if self._debug:
                         print '  - job deleted'
             except:
-                if self.debug:
+                if self._debug:
                     print '  - exception while processing job, burying for later inspection'
                 job.bury()
                 continue
 
-            if self.debug:
+            if self._debug:
                 print 'Moving to next job...'
                 print
                 
@@ -99,14 +100,14 @@ class Runner(object):
         self._preset_args = []
 
         try:
-            argspec = inspect.getargspec(self._callable)
+            argspec = inspect.getargspec(self.callable)
         except TypeError:
             return
 
         self._accepts_kwargs = argspec.keywords != None
 
         # skip the "self" arg for class methods
-        if inspect.ismethod(self._callable):
+        if inspect.ismethod(self.callable):
             self._all_args = argspec.args[1:]
         else:
             self._all_args = argspec.args
