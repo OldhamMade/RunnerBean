@@ -1,5 +1,6 @@
 import os
 import sys
+import inspect
 
 import beanstalkc
 from resolver import resolve as resolve_import
@@ -18,7 +19,9 @@ class Runner(object):
 
         else:
             raise Exception('"callable" is not a callable')
-        
+
+        self._process_argspec()
+
         self._host = host
         self._port = port
         self._tubes = tubes
@@ -59,10 +62,10 @@ class Runner(object):
                 job.bury()
                 continue
 
-            if not data or set(data.keys()) != self.expected_keys:
+            if not data or set(data.keys()) != self._expected_args:
                 if self.debug:
                     print '  - burying job due to missing keys:',
-                    print 'espected (%s),' % ', '.join(self.expected_keys),
+                    print 'espected (%s),' % ', '.join(self._expected_args),
                     print 'found (%s),' % ', '.join(data.keys())
                 job.bury()
                 continue
@@ -87,6 +90,37 @@ class Runner(object):
 
     def __del__(self):
         self.server.close()
+
+
+    def _process_argspec(self):
+        self._accepts_kwargs = False
+        self._all_args = []
+        self._expected_args = []
+        self._preset_args = []
+
+        try:
+            argspec = inspect.getargspec(self._callable)
+        except TypeError:
+            return
+
+        self._accepts_kwargs = argspec.keywords != None
+
+        # skip the "self" arg for class methods
+        if inspect.ismethod(self._callable):
+            self._all_args = argspec.args[1:]
+        else:
+            self._all_args = argspec.args
+
+        try:
+            self._expected_args = self._all_args[:-len(argspec.defaults)]
+        except TypeError:
+            self._expected_args = self._all_args
+
+        try:
+            self._preset_args = self._all_args[-len(argspec.defaults):]
+        except TypeError:
+            self._preset_args = self._all_args
+
 
     def _get_connection(self):
         if not self._server:
