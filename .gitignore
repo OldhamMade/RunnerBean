@@ -1,0 +1,8 @@
+.DS_Store
+.installed.cfg
+bin/*
+develop-eggs/*
+eggs/*
+parts/*
+*.pyc
+*.pyo
