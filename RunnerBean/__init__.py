@@ -116,7 +116,8 @@ class Runner(object):
 
     def __del__(self):
         try:
-            self.server.close()
+            if self.server:
+                self.server.close()
         except:
             pass
 
