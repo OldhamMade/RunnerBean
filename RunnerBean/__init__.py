@@ -29,6 +29,8 @@ class Runner(object):
         self._process_argspec()
 
         if not self._expected_args:
+            print self._all_args
+            print self._expected_args
             raise Exception('no arguments expected for callable')
 
         self._host = host
@@ -130,6 +132,7 @@ class Runner(object):
 
         try:
             argspec = inspect.getargspec(self.callable)
+            print argspec
         except TypeError:
             return
 
