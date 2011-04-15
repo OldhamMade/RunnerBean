@@ -90,7 +90,7 @@ class Runner(object):
                     print '  - burying job due to missing keys:',
                     print 'expected (%s),' % ', '.join(self._expected_args),
                     print 'found (%s),' % ', '.join(data.keys())
-                job.bury()
+                #job.bury()
                 continue
 
             try:
