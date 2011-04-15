@@ -90,7 +90,7 @@ class Runner(object):
 
             keys = set(data.keys())
             args = set(self._expected_args)
-            if not data or args == args & keys:
+            if not data or args != args & keys:
                 if self._debug:
                     print '  - burying job due to missing keys:',
                     print 'expected (%s),' % ', '.join(self._expected_args),
