@@ -29,7 +29,7 @@ class Runner(object):
         self._process_argspec()
 
         if not self._expected_args:
-            raise Exception('no arguments expected for callable "%s"' % self.callable.__name__)
+            raise Exception('no arguments expected for callable')
 
         self._host = host
         self._port = port
@@ -115,7 +115,10 @@ class Runner(object):
                 
 
     def __del__(self):
-        self.server.close()
+        try:
+            self.server.close()
+        except:
+            pass
 
 
     def _process_argspec(self):
