@@ -78,7 +78,7 @@ class Runner(object):
                 data = decrypt(job.body)
             except Exception as e:
                 if self._debug:
-                    print '  - burying job due to malformed body (not parsable by PyYAML)'
+                    print '  - burying job due to malformed body (not parsable as json)'
                     print e
                 job.bury()
                 continue
