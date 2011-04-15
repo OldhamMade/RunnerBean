@@ -4,7 +4,11 @@ import inspect
 
 import beanstalkc
 from resolver import resolve as resolve_import
-from yaml import safe_load as decrypt
+
+try:
+    from simplejson import loads as decrypt
+except ImportError:
+    from json import loads as decrypt
 
 
 class Runner(object):

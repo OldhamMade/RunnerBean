@@ -11,6 +11,6 @@ setup(name="RunnerBean",
     dependency_links = [
         "https://github.com/unpluggd/resolver/tarball/0.2.1#egg=resolver-0.2.1"
     ],
-    install_requires=['PyYAML', 'resolver>=0.2.0', 'beanstalkc'],
+    install_requires=['simplejson', 'resolver>=0.2.0', 'beanstalkc'],
     )
       
