@@ -62,8 +62,7 @@ class Runner(object):
                 continue
 
             if self._debug:
-                print dir(job)
-                print 'Found job: %s' % job.id
+                print 'Found job: %s' % job.jid
 
             if not job.body:
                 if self._debug:
