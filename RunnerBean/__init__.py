@@ -83,10 +83,10 @@ class Runner(object):
                 job.bury()
                 continue
 
-            if not data or set(data.keys()) != self._expected_args:
+            if not data or set(dict(data).keys()) != self._expected_args:
                 if self._debug:
                     print '  - burying job due to missing keys:',
-                    print 'espected (%s),' % ', '.join(self._expected_args),
+                    print 'expected (%s),' % ', '.join(self._expected_args),
                     print 'found (%s),' % ', '.join(data.keys())
                 job.bury()
                 continue
