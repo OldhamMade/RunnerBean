@@ -134,7 +134,7 @@ class Runner(object):
             argspec = inspect.getargspec(self.callable)
             print argspec
         except TypeError:
-            return
+            raise Exception('could not parse argspec for callable')
 
         self._accepts_kwargs = argspec.keywords != None
 
