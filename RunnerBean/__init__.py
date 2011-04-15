@@ -94,7 +94,7 @@ class Runner(object):
                 if self._debug:
                     print '  - burying job due to missing keys:',
                     print 'expected (%s),' % ', '.join(self._expected_args),
-                    print 'found (%s),' % ', '.join(keys
+                    print 'found (%s),' % ', '.join(keys)
                 job.bury()
                 continue
 
