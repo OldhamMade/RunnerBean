@@ -107,6 +107,11 @@ class Runner(object):
                     job.delete()
                     if self._debug:
                         print '  - job deleted'
+                else:
+                    if self._debug:
+                        print '  - error while processing job, burying for later inspection'
+                    job.bury()
+                    continue
             except:
                 if self._debug:
                     print '  - exception while processing job, burying for later inspection'
