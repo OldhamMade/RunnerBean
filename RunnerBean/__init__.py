@@ -121,7 +121,7 @@ class Runner(object):
             if self._debug:
                 print 'Moving to next job...'
                 print
-                
+
 
     def __del__(self):
         try:
