@@ -11,6 +11,11 @@ Usage::
     from RunnerBean import Runner
 
     def print_message(message):
+        """accepts a job with the following structure: 
+        {
+            'message': 'Hello world!',
+        }
+        """
         print message
 
     if __name__ == '__main__':
