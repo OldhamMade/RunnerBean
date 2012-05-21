@@ -107,7 +107,7 @@ class Runner(object):
                 self.log.debug('    [%s] executing job with args (%s)' % (job.jid, keys))
 
                 if self.callable(**data):
-                    self.log.info('    [%s] executed successfully' % (job.jid, keys))
+                    self.log.info('    [%s] executed successfully' % job.jid)
                     job.delete()
                     continue
 
@@ -115,7 +115,6 @@ class Runner(object):
 
             except Exception as e:
                 self.log.exception('    [%s] exception raised during execution; burying for later inspection' % job.jid)
-
             job.bury()
 
 
