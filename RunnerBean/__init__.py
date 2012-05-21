@@ -114,7 +114,7 @@ class Runner(object):
                 self.log.warning('    [%s] was not executed successfully; burying job for later inspection' % job.jid)
 
             except Exception as e:
-                self.log.warning('    [%s] exception raised during execution; burying for later inspection')
+                self.log.warning('    [%s] exception raised during execution; burying for later inspection' % job.jid)
                 self.log.warning('      %s' % e)
 
             job.bury()
