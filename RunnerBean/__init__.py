@@ -27,7 +27,7 @@ class Runner(object):
         self._host = host
         self._port = port
 
-        logging.basicConfig(filename='example.log', level=logging.INFO))
+        logging.basicConfig(filename=logfile, level=loglevel)
         self.log = logging.getLogger(__name__)
 
         if isinstance(callable, basestring):
