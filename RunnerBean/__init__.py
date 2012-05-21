@@ -31,7 +31,7 @@ class Runner(object):
         self.log = logging.getLogger(__name__)
 
         if isinstance(callable, basestring):
-            self.callable = resolve(callable)
+            self.callable = self.resolve(callable)
 
         elif hasattr(callable, '__call__'):
             self.callable = callable
@@ -59,9 +59,9 @@ class Runner(object):
 
 
     def run(self, timeout=None):
-        log.info('Reserving on tubes (%s):' % self._tubes)
+        self.log.info('Reserving on tubes (%s):' % self._tubes)
         if timeout:
-            log.info('  [setting timeout to %ds]' % timeout)
+            self.log.info('  [setting timeout to %ds]' % timeout)
 
         while 1:
 
@@ -71,13 +71,13 @@ class Runner(object):
                 job = self.server.reserve()
 
             if not job:
-                log.info('  Received empty job; skipping loop.')
+                self.log.info('  Received empty job; skipping loop.')
                 continue
 
-            log.info('  Processing job "%s":' % job.jid)
+            self.log.info('  Processing job "%s":' % job.jid)
 
             if not job.body:
-                log.warning('    [%s] body missing; burying job for later inspection' % job.jid)
+                self.log.warning('    [%s] body missing; burying job for later inspection' % job.jid)
                 job.bury()
                 continue
 
@@ -85,13 +85,13 @@ class Runner(object):
                 data = decode(job.body)
 
             except Exception as e:
-                log.warning('    [%s] body was not parsable JSON; burying for later inspection' % job.jid)
-                log.warning('      %s' % e)
+                self.log.warning('    [%s] body was not parsable JSON; burying for later inspection' % job.jid)
+                self.log.warning('      %s' % e)
                 job.bury()
                 continue
 
             if not data:
-                log.warning('    [%s] parsed body was empty; burying job for later inspection' % job.jid)
+                self.log.warning('    [%s] parsed body was empty; burying job for later inspection' % job.jid)
                 job.bury()
                 continue
 
@@ -99,23 +99,23 @@ class Runner(object):
             args = set(self._expected_args)
 
             if args - keys:
-                log.warning('    [%s] is missing keys (%s); burying job for later inspection' % (job.jid, args - keys))
+                self.log.warning('    [%s] is missing keys (%s); burying job for later inspection' % (job.jid, args - keys))
                 job.bury()
                 continue
 
             try:
-                log.debug('    [%s] executing job with args (%s)' % (job.jid, keys))
+                self.log.debug('    [%s] executing job with args (%s)' % (job.jid, keys))
 
                 if self.callable(**data):
-                    log.info('    [%s] executed successfully' % (job.jid, keys))
+                    self.log.info('    [%s] executed successfully' % (job.jid, keys))
                     job.delete()
                     continue
 
-                log.warning('    [%s] was not executed successfully; burying job for later inspection' % job.jid)
+                self.log.warning('    [%s] was not executed successfully; burying job for later inspection' % job.jid)
 
             except Exception as e:
-                log.warning('    [%s] exception raised during execution; burying for later inspection')
-                log.warning('      %s' % e)
+                self.log.warning('    [%s] exception raised during execution; burying for later inspection')
+                self.log.warning('      %s' % e)
 
             job.bury()
 
@@ -135,7 +135,7 @@ class Runner(object):
         self._expected_args = []
         self._preset_args = []
 
-        log.debug('Parsing argspec for "%s":' % self.callable.__name__)
+        self.log.debug('Parsing argspec for "%s":' % self.callable.__name__)
 
         try:
             argspec = inspect.getargspec(self.callable)
@@ -147,7 +147,7 @@ class Runner(object):
 
         self._accepts_kwargs = argspec.keywords != None
 
-        log.debug('  accepts keyword args: %s' % self._accepts_kwargs)
+        self.log.debug('  accepts keyword args: %s' % self._accepts_kwargs)
 
         # skip the "self" arg for class methods
         if inspect.isfunction(self.callable):
@@ -155,21 +155,21 @@ class Runner(object):
         else:
             self._all_args = argspec.args[1:]
 
-        log.debug('  all arguments accepted: %s' % self._all_args)
+        self.log.debug('  all arguments accepted: %s' % self._all_args)
 
         try:
             self._expected_args = self._all_args[:-len(argspec.defaults)]
         except TypeError:
             self._expected_args = self._all_args
 
-        log.debug('  expected arguments: %s' % self._expected_args)
+        self.log.debug('  expected arguments: %s' % self._expected_args)
 
         try:
             self._preset_args = self._all_args[-len(argspec.defaults):]
         except TypeError:
             self._preset_args = self._all_args
 
-        log.debug('  args with default value: %s' % self._preset_args)
+        self.log.debug('  args with default value: %s' % self._preset_args)
 
 
     def _get_connection(self):
@@ -188,14 +188,14 @@ class Runner(object):
 
 
 
-def resolve(callable):
-    log.debug('Attempting to resolve "%s"...' % callable)
+    def resolve(callable):
+        self.log.debug('Attempting to resolve "%s"...' % callable)
 
-    func = resolve_import(callable)
+        func = resolve_import(callable)
 
-    if not func:
-        raise ImportError()
+        if not func:
+            raise ImportError()
 
-    log.debug('Found "%s"' % func.__name__)
+        self.log.debug('Found "%s"' % func.__name__)
 
-    return func
+        return func
