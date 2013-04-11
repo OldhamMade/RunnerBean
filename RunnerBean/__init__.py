@@ -71,8 +71,8 @@ class Runner(object):
                 job = self.server.reserve()
 
             if not job:
-                self.log.info('  Received empty job; skipping loop.')
-                continue
+                self.log.info('  Reserve timeout reached. Ending run.')
+                break
 
             self.log.info('  Processing job "%s":' % job.jid)
 
