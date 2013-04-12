@@ -20,6 +20,8 @@ Usage::
         """
         print recipient, message
 
+        return True # this deletes the job from the tube
+
     if __name__ == '__main__':
         runner = Runner(print_message,
                         tubes="messages", # string or list of tubes to listen on

@@ -99,22 +99,21 @@ class Runner(object):
             args = set(self._expected_args)
 
             if args - keys:
-                self.log.warning('    [%s] is missing keys (%s); burying job for later inspection' % (job.jid, args - keys))
+                self.log.warning('    [%s] is missing keys (%s); burying job for later inspection' % (job.jid, ', '.join(args - keys)))
                 job.bury()
                 continue
 
             try:
-                self.log.debug('    [%s] executing job with args (%s)' % (job.jid, keys))
+                self.log.debug('    [%s] executing job with args (%s)' % (job.jid, ', '.join(keys)))
 
                 if self.callable(**data):
                     self.log.info('    [%s] executed successfully' % job.jid)
                     job.delete()
                     continue
 
-                self.log.warning('    [%s] was not executed successfully; burying job for later inspection' % job.jid)
-
             except Exception as e:
                 self.log.exception('    [%s] exception raised during execution; burying for later inspection' % job.jid)
+            self.log.warning('    [%s] was not executed successfully; burying job for later inspection' % job.jid)
             job.bury()
 
 
@@ -183,7 +182,6 @@ class Runner(object):
         return self._server
 
     server = property(_get_connection)
-
 
 
     def resolve(callable):
