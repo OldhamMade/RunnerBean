@@ -72,7 +72,7 @@ class Runner(object):
 
             if not job:
                 self.log.info('  Reserve timeout reached. Ending run.')
-                break
+                raise SystemExit()
 
             self.log.info('  Processing job "%s":' % job.jid)
 
