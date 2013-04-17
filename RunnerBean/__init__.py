@@ -108,8 +108,12 @@ class Runner(object):
 
                 if self.callable(**data):
                     self.log.info('    [%s] executed successfully' % job.jid)
-                    job.delete()
-                    continue
+                    try:
+                        job.delete()
+                        job.stats()
+                        self.log.debug('    [%s] could not be deleted' % jid)
+                    except beanstalkc.CommandFailed:
+                        continue
 
             except Exception as e:
                 self.log.exception('    [%s] exception raised during execution; burying for later inspection' % job.jid)
