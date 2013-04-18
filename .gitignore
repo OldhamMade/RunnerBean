@@ -1,6 +1,7 @@
 ### /Users/phillipoldham/.gitignore-boilerplates/Global/OSX.gitignore
 
 .DS_Store
+*.log
 
 # Thumbnails
 ._*
