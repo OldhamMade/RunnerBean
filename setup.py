@@ -4,7 +4,8 @@ import os, sys
 execfile('RunnerBean/__version__.py')
 
 setup(name="RunnerBean",
-    description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
+    description='A simple tool for creating long-running Python workers listening for Beanstalk jobs.',
+    long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
     version=__version__,
     url="https://github.com/wewriteapps/RunnerBean",
     packages=find_packages(exclude="specs"),
