@@ -12,7 +12,6 @@ setup(name="RunnerBean",
         "https://github.com/wewriteapps/resolver/tarball/0.2.1#egg=resolver-0.2.1"
           ],
     install_requires=[
-          'simplejson',
           'resolver>=0.2.0',
           'PyYAML',
           'beanstalkc'
