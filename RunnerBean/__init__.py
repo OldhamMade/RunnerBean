@@ -255,7 +255,7 @@ class Runner(object):
         if not self._expected_args and not self._accepts_kwargs:
             raise RunnerException('No arguments expected for "{}"'.format(self.callable.__name__))
 
-        self.log.debug('args which "{}" expects: {}'.format(
+        self.log.debug('args "{}" expects: {}'.format(
             self.callable.__name__,
             ', '.join(self._expected_args)))
 
