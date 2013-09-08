@@ -1,16 +1,14 @@
-import os
-import sys
 import inspect
 import logging
 
 import beanstalkc
 from resolver import resolve as resolve_import
 
-from yaml import load, dump
+from yaml import load
 try:
     from yaml import CSafeLoader as Loader
 except ImportError:
-    from yaml import SafeLoader
+    from yaml import SafeLoader as Loader
 
 
 class RunnerException(Exception):
@@ -71,7 +69,7 @@ class Runner(object):
             self.callable = callable_
 
         else:
-            raise RunnerException('Unable to use "{}" as a callable'.format(callable_))
+            raise RunnerException('Unable to use "{0}" as a callable'.format(callable_))
 
         self._process_argspec()
 
@@ -82,7 +80,7 @@ class Runner(object):
             self._tubes = [str(tubes)]
 
         elif tubes is not None:
-            raise RunnerException('"tubes" argument is not a valid type; received {}, expected one of (iterable, string, unicode)'.format(type(tubes)))
+            raise RunnerException('"tubes" argument is not a valid type; received {0}, expected one of (iterable, string, unicode)'.format(type(tubes)))
 
 
     def __call__(self, timeout=None, parse=True):
@@ -101,10 +99,10 @@ class Runner(object):
             reached the runner will exit by raising a ``TimeoutReachedException``.
 
         """
-        self.log.info('Reserving on tubes ("{}"):'.format('", "'.join(self._tubes)))
+        self.log.info('Reserving on tubes ("{0}"):'.format('", "'.join(self._tubes)))
 
         if timeout:
-            self.log.info('Reserving with a timeout of {}s'.format(timeout))
+            self.log.info('Reserving with a timeout of {0}s'.format(timeout))
 
         while 1:
             if timeout is not None:
@@ -114,16 +112,19 @@ class Runner(object):
 
             if not job:
                 self.log.info('Reserve timeout reached. Ending run.')
-                raise TimeoutReachedException('Reserve timeout of {}s reached'.format(timeout))
+                raise TimeoutReachedException('Reserve timeout of {0}s reached'.format(timeout))
 
-            self.log.info('Processing job "{}":'.format(job.jid))
+            self.log.info('[{0}] Processing job with a time-left of {1}:'.format(
+                job.jid,
+                job.stats()['time-left']
+                ))
 
             if not job.body:
                 self._bury(job, "job's body is empty")
                 continue
 
             if self._process(job):
-                self.log.info('[{}] executed successfully'.format(job.jid))
+                self.log.info('[{0}] executed successfully'.format(job.jid))
                 continue
 
             self._bury(job, 'job was not sucessfully processed')
@@ -155,11 +156,18 @@ class Runner(object):
             keys = args = set([])
 
         if not self._accepts_kwargs and args - keys:
-            self._bury(job, 'callable is missing args ({})'.format(', '.join(args - keys)))
+            self._bury(job, 'callable is missing args ({0})'.format(', '.join(args - keys)))
             return False
 
         try:
-            self.log.debug('[{}] executing job with args ({})'.format(job.jid, ', '.join(keys)))
+            self.log.debug('[{0}] executing job with args ({1})'.format(
+                job.jid,
+                ', '.join(keys)
+                ))
+            self.log.debug('[{0}] executing job with values ({1})'.format(
+                job.jid,
+                data,  # ', '.join('='.format(k, v) for k, v in data.iteritems())
+                ))
 
             if '__tube__' in self._all_args:
                 data['__tube__'] = job.stats()['tube']
@@ -183,7 +191,7 @@ class Runner(object):
 
     def _call_with_job(self, job):
         try:
-            self.log.debug('[{}] executing job with job body'.format(job.jid))
+            self.log.debug('[{0}] executing job with job body of: {1}'.format(job.jid, job.body))
 
             if '__tube__' in self._all_args:
                 result = self.callable(job.body, __tube__=job.stats()['tube'])
@@ -209,9 +217,9 @@ class Runner(object):
 
     def _bury(self, job, message, exc_info=False):
         if not exc_info:
-            self.log.warning('[{}] {}; burying for later inspection'.format(job.jid, message))
+            self.log.warning('[{0}] {1}; burying for later inspection'.format(job.jid, message))
         else:
-            self.log.exception('[{}] {}; burying for later inspection'.format(job.jid, message))
+            self.log.exception('[{0}] {1}; burying for later inspection'.format(job.jid, message))
 
         job.bury()
 
@@ -222,7 +230,7 @@ class Runner(object):
         self._expected_args = []
         self._preset_args = []
 
-        self.log.debug('Parsing argspec for "{}":'.format(self.callable.__name__))
+        self.log.debug('Parsing argspec for "{0}":'.format(self.callable.__name__))
 
         try:
             argspec = inspect.getargspec(self.callable)
@@ -230,12 +238,12 @@ class Runner(object):
             try:
                 argspec = inspect.getargspec(self.callable.__call__)
             except TypeError:
-                raise RunnerException('could not parse argspec for "{}"'.format(self.callable.__name__))
+                raise RunnerException('could not parse argspec for "{0}"'.format(self.callable.__name__))
 
-        self._accepts_kwargs = argspec.keywords != None
+        self._accepts_kwargs = argspec.keywords is not None
 
         if self._accepts_kwargs:
-            self.log.debug('callable "{}" accepts keyword args'.format(self.callable.__name__))
+            self.log.debug('callable "{0}" accepts keyword args'.format(self.callable.__name__))
 
         # skip the "self" arg for class methods
         if inspect.isfunction(self.callable):
@@ -243,7 +251,7 @@ class Runner(object):
         else:
             self._all_args = argspec.args[1:]
 
-        self.log.debug('args "{}" will accept: {}'.format(
+        self.log.debug('args "{0}" will accept: {1}'.format(
             self.callable.__name__,
             ', '.join(self._all_args)))
 
@@ -253,9 +261,9 @@ class Runner(object):
             self._expected_args = self._all_args
 
         if not self._expected_args and not self._accepts_kwargs:
-            raise RunnerException('No arguments expected for "{}"'.format(self.callable.__name__))
+            raise RunnerException('No arguments expected for "{0}"'.format(self.callable.__name__))
 
-        self.log.debug('args "{}" expects: {}'.format(
+        self.log.debug('args "{0}" expects: {1}'.format(
             self.callable.__name__,
             ', '.join(self._expected_args)))
 
@@ -264,7 +272,7 @@ class Runner(object):
         except TypeError:
             self._preset_args = self._all_args
 
-        self.log.debug('args "{}" accepts which have default values: {}'.format(
+        self.log.debug('args "{0}" accepts which have default values: {1}'.format(
             self.callable.__name__,
             ', '.join(self._preset_args)))
 
@@ -284,14 +292,14 @@ class Runner(object):
     server = property(_get_connection)
 
 
-    def resolve(callable):
-        self.log.debug('Attempting to resolve "{}"...'.format(callable))
+    def resolve(self, callable):
+        self.log.debug('Attempting to resolve "{0}"...'.format(callable))
 
         func = resolve_import(callable)
 
         if not func:
-            raise ImportError('Could not import "{}"'.format(callable))
+            raise ImportError('Could not import "{0}"'.format(callable))
 
-        self.log.debug('Found callable "{}"'.format(func.__name__))
+        self.log.debug('Found callable "{0}"'.format(func.__name__))
 
         return func
