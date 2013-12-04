@@ -55,8 +55,10 @@ class Runner(object):
         self._port = port
 
         if parse:
+            self.log.debug('Jobs will be parsed and passed as keyword arguments to callables')
             self._process = self._call_with_args
         else:
+            self.log.debug('PLEASE NOTE: Callables will be passed the unparsed job body as a single argument')
             self._process = self._call_with_job
 
         logging.basicConfig(filename=logfile, level=loglevel)
