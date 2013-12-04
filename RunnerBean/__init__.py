@@ -69,7 +69,9 @@ class Runner(object):
             self.callable = callable_
 
         else:
-            raise RunnerException('Unable to use "{0}" as a callable'.format(callable_))
+            error_msg = 'Unable to use "{0}" as a callable'.format(callable_)
+            self.log.error(error_msg)
+            raise RunnerException(error_msg)
 
         self._process_argspec()
 
@@ -80,7 +82,9 @@ class Runner(object):
             self._tubes = [str(tubes)]
 
         elif tubes is not None:
-            raise RunnerException('"tubes" argument is not a valid type; received {0}, expected one of (iterable, string, unicode)'.format(type(tubes)))
+            error_msg = '"tubes" argument is not a valid type; received {0}, expected one of (iterable, string, unicode)'.format(type(tubes))
+            self.log.error(error_msg)
+            raise RunnerException(error_msg)
 
 
     def __call__(self, timeout=None, parse=True):
@@ -238,7 +242,9 @@ class Runner(object):
             try:
                 argspec = inspect.getargspec(self.callable.__call__)
             except TypeError:
-                raise RunnerException('could not parse argspec for "{0}"'.format(self.callable.__name__))
+                error_msg = 'Could not parse argspec for "{0}"'.format(self.callable.__name__)
+                self.log.error(error_msg)
+                raise RunnerException(error_msg)
 
         self._accepts_kwargs = argspec.keywords is not None
 
@@ -261,7 +267,9 @@ class Runner(object):
             self._expected_args = self._all_args
 
         if not self._expected_args and not self._accepts_kwargs:
-            raise RunnerException('No arguments expected for "{0}"'.format(self.callable.__name__))
+            error_msg = 'No arguments expected for "{0}"'.format(self.callable.__name__)
+            self.log.error(error_msg)
+            raise RunnerException(error_msg)
 
         self.log.debug('args "{0}" expects: {1}'.format(
             self.callable.__name__,
