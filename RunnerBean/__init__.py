@@ -1,5 +1,6 @@
 import inspect
 import logging
+import time
 
 import beanstalkc
 from resolver import resolve as resolve_import
@@ -31,6 +32,21 @@ def humanize_time(secs=0):
     if not any([hours, mins, secs]):
         result.append('0secs')
     return ', '.join(result)
+
+
+
+class Timer:
+    """
+    A utility context manager class to measure the time
+    a callable takes for logging purposes
+    """
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.interval = self.end - self.start
 
 
 
@@ -186,22 +202,25 @@ class Runner(object):
             self._bury(job, 'callable is missing args ({0})'.format(', '.join(args - keys)))
             return False
 
+        job_id = job.jid
+
         try:
             self.log.debug('[{0}] executing job with args ({1})'.format(
-                job.jid,
+                job_id,
                 ', '.join(keys)
                 ))
             self.log.debug('[{0}] executing job with values ({1})'.format(
-                job.jid,
+                job_id,
                 data,  # ', '.join('='.format(k, v) for k, v in data.iteritems())
                 ))
 
             if '__tube__' in self._all_args:
                 data['__tube__'] = job.stats()['tube']
 
-            result = self.callable(**data)
+            with Timer() as t:
+                result = self.callable(**data)
 
-            self.log.debug('[{0}] executed job with result: {1}'.format(job.jid, result))
+            self.log.debug('[{0}] executed job with result: {1}'.format(job_id, result))
 
             if result:
                 try:
@@ -217,19 +236,27 @@ class Runner(object):
         except Exception as e:
             self._bury(job, str(e), True)
 
+        finally:
+            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id))
+
         return False
 
 
     def _call_with_job(self, job):
         try:
-            self.log.debug('[{0}] executing job with job body of: {1}'.format(job.jid, job.body))
+            job_id = job.jid
 
-            if '__tube__' in self._all_args:
-                result = self.callable(job.body, __tube__=job.stats()['tube'])
-            else:
-                result = self.callable(job.body)
+            self.log.debug('[{0}] executing job with job body of: {1}'.format(
+                job_id, job.body))
 
-            self.log.debug('[{0}] executed job with result: {1}'.format(job.jid, result))
+            with Timer() as t:
+                if '__tube__' in self._all_args:
+                    result = self.callable(job.body, __tube__=job.stats()['tube'])
+                else:
+                    result = self.callable(job.body)
+
+            self.log.debug('[{0}] executed job with result: {1}'.format(
+                job_id, result))
 
             if result is True:
                 try:
@@ -244,6 +271,9 @@ class Runner(object):
 
         except Exception as e:
             self._bury(job, str(e), True)
+
+        finally:
+            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id))
 
         return False
 
