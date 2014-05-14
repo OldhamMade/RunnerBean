@@ -172,13 +172,17 @@ class Runner(object):
             if '__tube__' in self._all_args:
                 data['__tube__'] = job.stats()['tube']
 
-            if self.callable(**data):
+            result = self.callable(**data)
+
+            self.log.debug('[{0}] executed job with result: {1}'.format(job.jid, result))
+
+            if result:
                 try:
                     job.delete()
                     job.stats()
                 except beanstalkc.CommandFailed:
-                    # job.stats() should raise if the job was deleted successfully
-                    # so continue as expected
+                    # job.stats() should raise if the job was deleted
+                    # successfully so continue as expected
                     return True
 
                 self._bury(job, 'job processed but could not be deleted')
@@ -197,6 +201,8 @@ class Runner(object):
                 result = self.callable(job.body, __tube__=job.stats()['tube'])
             else:
                 result = self.callable(job.body)
+
+            self.log.debug('[{0}] executed job with result: {1}'.format(job.jid, result))
 
             if result is True:
                 try:
