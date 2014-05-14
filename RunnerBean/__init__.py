@@ -237,7 +237,7 @@ class Runner(object):
             self._bury(job, str(e), True)
 
         finally:
-            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id))
+            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id, t.interval))
 
         return False
 
@@ -273,7 +273,7 @@ class Runner(object):
             self._bury(job, str(e), True)
 
         finally:
-            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id))
+            self.log.debug('[{0}] executed in {1:.2%}s'.format(job_id, t.interval))
 
         return False
 
