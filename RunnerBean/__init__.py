@@ -11,13 +11,38 @@ except ImportError:
     from yaml import SafeLoader as Loader
 
 
+def humanize_time(secs=0):
+    mins, secs = divmod(int(secs), 60)
+    hours, mins = divmod(mins, 60)
+    days, hours = divmod(hours, 24)
+    result = []
+    if days:
+        pluralise = '' if hours == 1 else 's'
+        result.append('{0}day{1}'.format(days, pluralise))
+    if hours:
+        pluralise = '' if hours == 1 else 's'
+        result.append('{0}hr{1}'.format(hours, pluralise))
+    if mins:
+        pluralise = '' if mins == 1 else 's'
+        result.append('{0}min{1}'.format(mins, pluralise))
+    if secs:
+        pluralise = '' if secs == 1 else 's'
+        result.append('{0}sec{1}'.format(secs, pluralise))
+    if not any([hours, mins, secs]):
+        result.append('0secs')
+    return ', '.join(result)
+
+
+
 class RunnerException(Exception):
     pass
+
 
 
 class TimeoutReachedException(Exception):
     """Raised when a timeout is reached"""
     pass
+
 
 
 class Runner(object):
@@ -114,9 +139,11 @@ class Runner(object):
                 self.log.info('Reserve timeout reached. Ending run.')
                 raise TimeoutReachedException('Reserve timeout of {0}s reached'.format(timeout))
 
-            self.log.info('[{0}] Processing job with a time-left of {1}:'.format(
+            self.log.info(
+                '[{0}] Processing job with a time-left/TTR of {1}s ({2})'.format(
                 job.jid,
-                job.stats()['time-left']
+                job.stats().get('time-left', 'UNDEFINED'),
+                humanize_time(job.stats().get('time-left', '0'))
                 ))
 
             if not job.body:
