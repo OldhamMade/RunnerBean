@@ -87,8 +87,8 @@ class Runner(object):
                 'string, unicode)'.format(type(tubes))
             )
 
-    def __call__(self, timeout=None, parse=True):
-        self.run(timeout=timeout, parse=parse)
+    def __call__(self, timeout=None):
+        self.run(timeout=timeout)
 
     def run(self, timeout=None):
         """Start the runner/worker. The runner/worker will run forever
@@ -305,13 +305,13 @@ class Runner(object):
 
     server = property(_get_connection)
 
-    def resolve(self, callable):
-        self.log.debug('Attempting to resolve "{0}"...'.format(callable))
+    def resolve(self, callable_):
+        self.log.debug('Attempting to resolve "{0}"...'.format(callable_))
 
-        func = resolve_import(callable)
+        func = resolve_import(callable_)
 
         if not func:
-            raise ImportError('Could not import "{0}"'.format(callable))
+            raise ImportError('Could not import "{0}"'.format(callable_))
 
         self.log.debug('Found callable "{0}"'.format(func.__name__))
 
